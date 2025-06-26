@@ -27,9 +27,9 @@ url='https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
 tabelle_url=pd.read_html(url)[0]
 
 ticker=tabelle_url['Symbol'].tolist()
-interval= "1d"
+interval= "1h"
 days_periode= 7
-total_days= 7
+total_days= 30
 enddate= datetime.today()
 startdate= enddate - timedelta(days = total_days)  #datetime - ein genauer Zeitstempel (Datum), timedelta – eine Zeitspanne, z. B. "7 Tage" oder "3 Stunden"
 
@@ -75,8 +75,8 @@ volletab=pd.concat(tabrahmen, ignore_index=True) #index datetimeindex wird von p
 # print(volletab.head())
 # print(volletab.columns)
 # print(type(volletab))
-
-conn=sqlite3.connect('backtest.db')
+db_path=r"C:\Users\akoca\Desktop\AK\00_Projekte\Python\Einfuerung_Weiterbildung\fork\Python\Ahmet\backtest.db"
+conn=sqlite3.connect(db_path)
 volletab.to_sql('test_ahm_temp_2', conn, if_exists='replace', index=False)
 
 

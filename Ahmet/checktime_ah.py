@@ -18,6 +18,11 @@ backtest_db = SqliteExtDatabase(
     },
 )  
 
+url='https://en.wikipedia.org/wiki/List_of_S%26P_500_companies' 
+tabelle_url=pd.read_html(url)[0]
+
+ticker_URL=tabelle_url['Symbol'].tolist()
+
 class TestAhmTemp2(peewee.Model):
     adj__close = peewee.FloatField(column_name='Adj Close', null=True)
     close = peewee.FloatField(column_name='Close', null=True)
@@ -96,13 +101,13 @@ def check_data(check_start, check_end):
     query=(
         TestAhmTemp2
         .select(
-            TestAhmTemp2.date, 
+            fn.date(TestAhmTemp2.date), 
             TestAhmTemp2.symbol, 
             fn.count(TestAhmTemp2.symbol). alias("Count")
         )
         .where(
-            (TestAhmTemp2.date <= check_end) & 
-            (TestAhmTemp2.date >=check_start)
+            (fn.date(TestAhmTemp2.date) <= check_end) & 
+            (fn.date(TestAhmTemp2.date) >=check_start)
         )
         .group_by(TestAhmTemp2.date,TestAhmTemp2.symbol)
         .having(fn.count(TestAhmTemp2.symbol) != 7)
@@ -110,7 +115,7 @@ def check_data(check_start, check_end):
     
     for x in query:
         check_data = False
-        break
+        return check_data
 
     # sql = "SELECT date(tag), symbol, count(*) "\
     #     "FROM crypto_tseries t1 "\
@@ -128,37 +133,70 @@ def check_data(check_start, check_end):
 
     #Check 7 verschiede Einträge pro Tag
 
-    query= TestAhmTemp2.select(
-        TestAhmTemp2.date,
-          )    
-    sql = "SELECT date(tag), symbol, count(distinct tag) "\
-        "FROM crypto_tseries t1 "\
-        "where date(tag) <= date('"+ check_end +"') "\
-        "and date(tag) >= date('" + check_start +"') "\
-        "group by date(tag), symbol "\
-        "having count(distinct tag) <> 7 "
-    cursor = backtest_db.cursor()
-    cursor.execute(sql)
-
-    for x in cursor:
+    query=(
+        TestAhmTemp2
+        .select(
+            fn.Date(TestAhmTemp2.date),
+            TestAhmTemp2.symbol,
+            fn.Count(fn.distinct(TestAhmTemp2.date))
+        )
+        .where(
+            (fn.Date(TestAhmTemp2.date) <= check_end) &
+            (fn.Date(TestAhmTemp2.date) >= check_start)
+        )
+        .group_by(TestAhmTemp2.date,TestAhmTemp2.symbol)
+        .having(fn.Count(fn.distinct(TestAhmTemp2.date))) != 7  
+        )    
+    
+    for x in query:
         check_data = False
         return check_data
-    cursor.close()
+
+    # sql = "SELECT date(tag), symbol, count(distinct tag) "\
+    #     "FROM crypto_tseries t1 "\
+    #     "where date(tag) <= date('"+ check_end +"') "\
+    #     "and date(tag) >= date('" + check_start +"') "\
+    #     "group by date(tag), symbol "\
+    #     "having count(distinct tag) <> 7 "
+    # cursor = backtest_db.cursor()
+    # cursor.execute(sql)
+
+    # for x in cursor:
+    #     check_data = False
+    #     return check_data
+    # cursor.close()
 
     #Check alle Tage da
-    sql = "SELECT  count(distinct(date(tag))), symbol "\
-        "from crypto_tseries "\
-        "where date(tag) <= date('"+ check_end +"') "\
-        "and date(tag) >= date('" + check_start +"') "\
-        "group by symbol "\
-        "having count(distinct(date(tag))) <>  " + str(count_working_days)
-    cursor = backtest_db.cursor()
-    cursor.execute(sql)
+    query=(
+        TestAhmTemp2.select(
+            fn.count(fn.distinct(fn.date(TestAhmTemp2.date))),
+            TestAhmTemp2.symbol
+        )
+        .where(
+            (fn.date(TestAhmTemp2.date) <= check_end) &
+            (fn.date(TestAhmTemp2.date) >= check_start)
+        )
+        .group_by(TestAhmTemp2.symbol)
+        .having(fn.count(fn.distinct(fn.date(TestAhmTemp2.date))) != count_working_days
+        )
+    )
 
-    for x in cursor:
+    for x in query:
         check_data = False
         return check_data
-    cursor.close()
+    # sql = "SELECT  count(distinct(date(tag))), symbol "\
+    #     "from crypto_tseries "\
+    #     "where date(tag) <= date('"+ check_end +"') "\
+    #     "and date(tag) >= date('" + check_start +"') "\
+    #     "group by symbol "\
+    #     "having count(distinct(date(tag))) <>  " + str(count_working_days)
+    # cursor = backtest_db.cursor()
+    # cursor.execute(sql)
+
+    # for x in cursor:
+    #     check_data = False
+    #     return check_data
+    # cursor.close()
 
     #Check mindestens ein Eintrag im Zeitraum da
     # for ticker in ["MSFT", "AAPL", "DDDD"]:
@@ -186,38 +224,60 @@ def check_data(check_start, check_end):
     #     sql2 = " and symbol = ':sym'  "+\
     #       "having count(*) = 0 "
 
+
+
+
     if count_working_days > 0:
-        for ticker in ["MSFT", "AAPL"]:
+        for ticker in ticker_URL:
+            count_query=(
+                TestAhmTemp2.select(
+                    fn.count(TestAhmTemp2.symbol).alias("count")
+                )
+                .where(
+                    (fn.date(TestAhmTemp2.date) <= check_end) &
+                    (fn.date(TestAhmTemp2.date) >= check_start)&
+                    (TestAhmTemp2.symbol == ticker)
+                )
+            )
 
-            sql1 = (
-                    "SELECT count(*) as Anz "
-                    + "from crypto_tseries "
-                    + "where date(tag) <= date('"
-                    + check_end
-                    + "') "
-                    + "and date(tag) >= date('"
-                    + check_start
-                    + "') "
-                    )
-            sql2 = " and symbol = '" + ticker + "'  " + "having count(*) = 0 "
-            sql = sql1 + sql2
-        
-            # param={'sym':ticker}
-            cursor = backtest_db.cursor()
-            cursor.execute(sql)
-
-            for x in cursor:
-                #print("Fehler Daten in Zeitraum für Ticker nicht da: " + ticker)
-                check_data = False
-                return check_data
-            cursor.close
-
-
-            temp = cursor.fetchone()
-
-            cursor.close
-
+            result= count_query.scalar()
+            if result == 0:
+                print(f"keine Daten im Zeitaum für: {ticker}" )
+                return False
+    
     return check_data
+    # if count_working_days > 0:
+    #     for ticker in ["MSFT", "AAPL"]:
+
+    #         sql1 = (
+    #                 "SELECT count(*) as Anz "
+    #                 + "from crypto_tseries "
+    #                 + "where date(tag) <= date('"
+    #                 + check_end
+    #                 + "') "
+    #                 + "and date(tag) >= date('"
+    #                 + check_start
+    #                 + "') "
+    #                 )
+    #         sql2 = " and symbol = '" + ticker + "'  " + "having count(*) = 0 "
+    #         sql = sql1 + sql2
+        
+    #         # param={'sym':ticker}
+    #         cursor = backtest_db.cursor()
+    #         cursor.execute(sql)
+
+    #         for x in cursor:
+    #             #print("Fehler Daten in Zeitraum für Ticker nicht da: " + ticker)
+    #             check_data = False
+    #             return check_data
+    #         cursor.close
+
+
+    #         temp = cursor.fetchone()
+
+    #         cursor.close
+
+    # return check_data
 
     # if count_working_days > 0:
     #     for ticker in ["MSFT", "AAPL", "PSTS"]:
