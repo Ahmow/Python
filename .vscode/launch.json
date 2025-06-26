@@ -68,6 +68,15 @@
       "console": "integratedTerminal",
       "python": "C:/Program Files/Python311/python.exe"
  }
+ ,
+ {
+      "name": "Python Debug get data",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "main_interact.get_data",
+      "console": "integratedTerminal",
+      "python": "C:/Program Files/Python311/python.exe"
+ }
 ]
 }
 

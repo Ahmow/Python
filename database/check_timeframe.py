@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 from database.insert_db import ins_data
 
-def check_data(check_start, check_end):
+def check_data(check_start_dat, check_end_dat):
 
     def add_days(n, d = datetime.today()):
         return d + timedelta(n)
@@ -21,11 +21,12 @@ def check_data(check_start, check_end):
 
     # print('Enter end (yyyy-mm-dd):')
     # end = input()
-
-
-    #check_start = "2024-08-06"
-    #check_end =  "2024-08-21"
+    
     format_data = "%Y-%m-%d"
+
+    check_start = check_start_dat
+    check_end =  check_end_dat
+ 
     working_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
     holidays_fix = ["01-01", "05-01", "10-03", "12-25", "12-26"]
     holidays_flex = ["2025-04-18", "2025-04-21", "2025-05-29", "2025-06-09",
