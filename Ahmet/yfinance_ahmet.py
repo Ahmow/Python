@@ -23,15 +23,18 @@ from pytickersymbols import PyTickerSymbols
 
 # for stock in DAX_tickers:
 #     ticker =stock["symbol"]
-url='https://en.wikipedia.org/wiki/List_of_S%26P_500_companies' 
-tabelle_url=pd.read_html(url)[0]
+# url='https://en.wikipedia.org/wiki/List_of_S%26P_500_companies' 
+# tabelle_url=pd.read_html(url)[0]
 
-ticker=tabelle_url['Symbol'].tolist()
-interval= "1h"
-days_periode= 7
-total_days= 30
-enddate= datetime.today()
-startdate= enddate - timedelta(days = total_days)  #datetime - ein genauer Zeitstempel (Datum), timedelta – eine Zeitspanne, z. B. "7 Tage" oder "3 Stunden"
+def imp_yfinance():
+
+
+    ticker= ['MSFT']     #tabelle_url['Symbol'].tolist()
+    interval= "1h"
+    days_periode= 7
+    total_days= 30
+    enddate= datetime.today()
+    startdate= enddate - timedelta(days = total_days)  #datetime - ein genauer Zeitstempel (Datum), timedelta – eine Zeitspanne, z. B. "7 Tage" oder "3 Stunden"
 
 
 
@@ -39,47 +42,48 @@ startdate= enddate - timedelta(days = total_days)  #datetime - ein genauer Zeits
 # startdate_temp= datetime.strptime(startdatestr,"%Y-%m-%d").date()
 # enddate_temp= datetime.strptime(enddatestr,"%Y-%m-%d").date()
 
-tabstart= [startdate + timedelta(days=days_interval)
+    tabstart= [startdate + timedelta(days=days_interval)
                 for days_interval in range(0,(enddate - startdate).days,days_periode)] 
 
 
-tabrahmen=[]
-for symbol in ticker:
-    for tabstartzeit in tabstart:
-        tabendzeit= min(tabstartzeit + timedelta(days=days_periode),enddate)
+    tabrahmen=[]
+    for symbol in ticker:
+        for tabstartzeit in tabstart:
+            tabendzeit= min(tabstartzeit + timedelta(days=days_periode),enddate)
     
-        startdatestr= tabstartzeit.strftime("%Y-%m-%d")
-        enddatestr= tabendzeit.strftime("%Y-%m-%d")
+            # startdatestr= tabstartzeit.strftime("%Y-%m-%d")
+            # enddatestr= tabendzeit.strftime("%Y-%m-%d")
 
 
-        data = yf.download(symbol, interval=interval, start=tabstartzeit, end=tabendzeit)
+            data = yf.download(symbol, interval=interval, start=tabstartzeit, end=tabendzeit)
         # if isinstance(data.columns, pd.MultiIndex):
-        data.columns = data.columns.get_level_values(0) #MultiIndex flatten
+            data.columns = data.columns.get_level_values(0) #MultiIndex flatten
 
-        data=data.reset_index() #Hier wird der Index (Datetime) zu einer normalen Spalte 'Datetime'
+            data=data.reset_index() #Hier wird der Index (Datetime) zu einer normalen Spalte 'Datetime'
     
-        data['symbol'] = symbol
+            data['symbol'] = symbol
     # data_temp= data.index
     # date_temo_0= data.index[0] #.strptime("%Y-%m-&d")'
     # data["Datum"] = data.index
-        tabrahmen.append(data)
+            tabrahmen.append(data)
     
 
 # print(data.head())
 # print(data.columns)
 # print(type(data))
 
-volletab=pd.concat(tabrahmen, ignore_index=True) #index datetimeindex wird von pandas nicht als normale Spalte mitgenommen.
+    volletab=pd.concat(tabrahmen, ignore_index=True) #index datetimeindex wird von pandas nicht als normale Spalte mitgenommen.
 #volletab.columns = volletab.columns.get_level_values(0) #MultiIndex flatten
 
 # print(volletab.head())
 # print(volletab.columns)
 # print(type(volletab))
-db_path=r"C:\Users\akoca\Desktop\AK\00_Projekte\Python\Einfuerung_Weiterbildung\fork\Python\Ahmet\backtest.db"
-conn=sqlite3.connect(db_path)
-volletab.to_sql('test_ahm_temp_2', conn, if_exists='replace', index=False)
+    db_path=r"C:\Users\akoca\Desktop\AK\00_Projekte\Python\Einfuerung_Weiterbildung\fork\Python\Ahmet\backtest.db"
+    conn=sqlite3.connect(db_path)
+    volletab.to_sql('test_ahm_temp_2', conn, if_exists='replace', index=False)
 
-
+if __name__ == "__main__":
+    imp_yfinance()
 
 #qualität der daten prüfen.
 

@@ -10,7 +10,7 @@ from playhouse.sqlite_ext import SqliteExtDatabase
 
 #python -m pwiz -e sqlite backtest.db > models.py
 backtest_db = SqliteExtDatabase(
-    "backtest.db",
+    r"C:\Users\akoca\Desktop\AK\00_Projekte\Python\Einfuerung_Weiterbildung\fork\Python\Ahmet\backtest.db",
     pragmas={
         "journal_mode": "wal",  # WAL-mode.
         "cache_size": -64 * 1000,  # 64MB cache.
@@ -18,10 +18,10 @@ backtest_db = SqliteExtDatabase(
     },
 )  
 
-url='https://en.wikipedia.org/wiki/List_of_S%26P_500_companies' 
-tabelle_url=pd.read_html(url)[0]
+# url='https://en.wikipedia.org/wiki/List_of_S%26P_500_companies' 
+# tabelle_url=pd.read_html(url)[0]
 
-ticker_URL=tabelle_url['Symbol'].tolist()
+ticker_URL= ['MSFT'] #tabelle_url['Symbol'].tolist()
 
 class TestAhmTemp2(peewee.Model):
     adj__close = peewee.FloatField(column_name='Adj Close', null=True)
