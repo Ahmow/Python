@@ -1,13 +1,21 @@
 from peewee import *
+from playhouse.sqlite_ext import SqliteExtDatabase
 
-database = SqliteDatabase('backtest.db')
+backtest_db = SqliteExtDatabase(
+    r"C:\Users\akoca\Desktop\AK\00_Projekte\Python\Einfuerung_Weiterbildung\fork\Python\Ahmet\backtest.db",
+    pragmas={
+        "journal_mode": "wal",  # WAL-mode.
+        "cache_size": -64 * 1000,  # 64MB cache.
+        "synchronous": 0,
+    },
+)  
 
 class UnknownField(object):
     def __init__(self, *_, **__): pass
 
 class BaseModel(Model):
     class Meta:
-        database = database
+        database = backtest_db
 
 class Anzahl(BaseModel):
     adj__close = IntegerField(column_name='Adj Close', null=True)
@@ -54,7 +62,7 @@ class TestAhm(BaseModel):
 class TestAhmTemp2(BaseModel):
     adj__close = FloatField(column_name='Adj Close', null=True)
     close = FloatField(column_name='Close', null=True)
-    date = UnknownField(column_name='Date', null=True)  # TIMESTAMP
+    datetime = DateTimeField(column_name='Datetime', null=True)  # TIMESTAMP
     high = FloatField(column_name='High', null=True)
     low = FloatField(column_name='Low', null=True)
     open = FloatField(column_name='Open', null=True)

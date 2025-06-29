@@ -12,9 +12,10 @@ from Ahmet.yfinance_ahmet import imp_yfinance
 from peewee import fn
 import peewee
 from playhouse.sqlite_ext import SqliteExtDatabase
+from peewee import SQL
 
 backtest_db = SqliteExtDatabase(
-    "backtest.db",
+    r"C:\Users\akoca\Desktop\AK\00_Projekte\Python\Einfuerung_Weiterbildung\fork\Python\Ahmet\backtest.db",
     pragmas={
         "journal_mode": "wal",  # WAL-mode.
         "cache_size": -64 * 1000,  # 64MB cache.
@@ -46,22 +47,22 @@ backtest_db = SqliteExtDatabase(
 
 def get_data_from_sql(start_dt, end_dt, symbol='MSFT'):
     format_data = "%Y-%m-%d"
-    check_start = start_dt.strftime(format_data)
-    check_end = end_dt.strftime(format_data)
-    
+    check_start = start_dt
+    check_end = end_dt
+
 
     if not check_data(check_start, check_end):
         print("Daten unvollständig, versuche Download über yFinance")
-        imp_yfinance(check_start, check_end, symbol)
+        imp_yfinance()
 
-    if not check_data(check_start, check_end, symbol):
+    if not check_data(check_start, check_end):
             print("Daten konnten nicht vollständig geladen werden.")
             return None
 
     query = (
         TestAhmTemp2.select(
             TestAhmTemp2.symbol,
-            f.date(TestAhmTemp2.date),
+            fn.date(TestAhmTemp2.datetime),
             TestAhmTemp2.open,
             TestAhmTemp2.high,
             TestAhmTemp2.low,
@@ -69,8 +70,7 @@ def get_data_from_sql(start_dt, end_dt, symbol='MSFT'):
             TestAhmTemp2.volume
         )
         .where(
-            (fn.date(TestAhmTemp2.date) <= check_end) &
-            (fn.date(TestAhmTemp2.date) >= check_start)&
+            (TestAhmTemp2.datetime.between(check_start, check_end)) &
             (TestAhmTemp2.symbol == symbol) 
         )
     )
@@ -81,8 +81,15 @@ def get_data_from_sql(start_dt, end_dt, symbol='MSFT'):
     #     "and symbol = \'MSFT\' "
     # conn = connect("backtest.db")
 
-    df = pd.DataFrame(list(query.dicts()))
+    result_list = list(query.dicts())
+    if len(result_list) == 0:
+        print("Keine Daten im Query gefunden.")
+        return None
+
+    df = pd.DataFrame(result_list)
     return df
+
+
 #     else:
 #         # If data is not available in the database, fetch from yFinance and insert into the database
         

@@ -7,6 +7,10 @@ import pandas as pd
 from peewee import fn
 import peewee
 from playhouse.sqlite_ext import SqliteExtDatabase
+from models import TestAhmTemp2
+from peewee import SQL
+
+
 
 #python -m pwiz -e sqlite backtest.db > models.py
 backtest_db = SqliteExtDatabase(
@@ -23,21 +27,20 @@ backtest_db = SqliteExtDatabase(
 
 ticker_URL= ['MSFT'] #tabelle_url['Symbol'].tolist()
 
-class TestAhmTemp2(peewee.Model):
-    adj__close = peewee.FloatField(column_name='Adj Close', null=True)
-    close = peewee.FloatField(column_name='Close', null=True)
-    date = peewee.DateTimeField(column_name='Date', null=True)  # TIMESTAMP
-    high = peewee.FloatField(column_name='High', null=True)
-    low = peewee.FloatField(column_name='Low', null=True)
-    open = peewee.FloatField(column_name='Open', null=True)
-    volume = peewee.FloatField(column_name='Volume', null=True)
-    symbol = peewee.TextField(null=True)
+# class TestAhmTemp2(peewee.Model):
+#     adj__close = peewee.FloatField(column_name='Adj Close', null=True)
+#     close = peewee.FloatField(column_name='Close', null=True)
+#     date = peewee.DateTimeField(column_name='Date', null=True)  # TIMESTAMP
+#     high = peewee.FloatField(column_name='High', null=True)
+#     low = peewee.FloatField(column_name='Low', null=True)
+#     open = peewee.FloatField(column_name='Open', null=True)
+#     volume = peewee.FloatField(column_name='Volume', null=True)
+#     symbol = peewee.TextField(null=True)
 
-    class Meta:
-        database = backtest_db
-        table_name = 'test_ahm_temp_2'
-        primary_key = False# Let the OS manage syncing.
-
+#     class Meta:
+#         database = backtest_db
+#         table_name = 'test_ahm_temp_2'
+#         primary_key = False# Let the OS manage syncing.
 
 def check_data(check_start, check_end):
 
@@ -51,8 +54,8 @@ def check_data(check_start, check_end):
     # end = input()
 
 
-    #check_start = "2024-08-06"
-    #check_end =  "2024-08-21"
+    check_start = "2025-03-02"
+    check_end =  "2025-05-24"
     format_data = "%Y-%m-%d"
     working_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
     holidays_fix = ["01-01", "05-01", "10-03", "12-25", "12-26"]
@@ -66,7 +69,10 @@ def check_data(check_start, check_end):
     count_working_days = 0
     start_search = 0
 
-    check_data = True
+    is_data_valid = True
+
+    check_start_dt = datetime.strptime(check_start, format_data)
+    check_end_dt = datetime.strptime(check_end, format_data)
 
     check_start_day = dt.strptime(check_start, format_data).date()
     check_end_day = dt.strptime(check_end, format_data).date()
@@ -98,25 +104,28 @@ def check_data(check_start, check_end):
 
     #Check 7 Einträge pro Tag
     
-    query=(
+    query = (
         TestAhmTemp2
         .select(
-            fn.date(TestAhmTemp2.date), 
-            TestAhmTemp2.symbol, 
-            fn.count(TestAhmTemp2.symbol). alias("Count")
+            fn.DATE(TestAhmTemp2.datetime).alias('date_only'),
+            TestAhmTemp2.symbol,
+            fn.COUNT(TestAhmTemp2.symbol).alias("count")
         )
         .where(
-            (fn.date(TestAhmTemp2.date) <= check_end) & 
-            (fn.date(TestAhmTemp2.date) >=check_start)
+            (TestAhmTemp2.datetime <= check_end_dt) &
+            (TestAhmTemp2.datetime >= check_start_dt)
         )
-        .group_by(TestAhmTemp2.date,TestAhmTemp2.symbol)
-        .having(fn.count(TestAhmTemp2.symbol) != 7)
+        .group_by(fn.DATE(TestAhmTemp2.datetime), TestAhmTemp2.symbol)  # Gruppierung nach Datum (ohne Uhrzeit) und Symbol
+        .having(fn.COUNT(TestAhmTemp2.symbol) != 7)
     )
+
     
     for x in query:
-        check_data = False
-        return check_data
+        if x.date_only is None or x.symbol is None or x.count is None or x.count == 0:
+            print(f"Ungültige oder leere Daten: Datum={x.date_only}, Symbol={x.symbol}, Count={x.count}")
+            is_data_valid = False
 
+############################
     # sql = "SELECT date(tag), symbol, count(*) "\
     #     "FROM crypto_tseries t1 "\
     #     "where date(tag) <= date('"+ check_end +"') "\
@@ -133,25 +142,31 @@ def check_data(check_start, check_end):
 
     #Check 7 verschiede Einträge pro Tag
 
-    query=(
-        TestAhmTemp2
-        .select(
-            fn.Date(TestAhmTemp2.date),
-            TestAhmTemp2.symbol,
-            fn.Count(fn.distinct(TestAhmTemp2.date))
-        )
-        .where(
-            (fn.Date(TestAhmTemp2.date) <= check_end) &
-            (fn.Date(TestAhmTemp2.date) >= check_start)
-        )
-        .group_by(TestAhmTemp2.date,TestAhmTemp2.symbol)
-        .having(fn.Count(fn.distinct(TestAhmTemp2.date))) != 7  
-        )    
+    query = (
+    TestAhmTemp2
+    .select(
+        fn.DATE(TestAhmTemp2.datetime).alias("date_only"),
+        TestAhmTemp2.symbol,
+        fn.COUNT(TestAhmTemp2.datetime).alias("entry_count")
+    )
+    .where(
+        (TestAhmTemp2.datetime >= check_start_dt) &
+        (TestAhmTemp2.datetime <= check_end_dt)
+    )
+    .group_by(
+        fn.DATE(TestAhmTemp2.datetime),
+        TestAhmTemp2.symbol
+    )
+    .having(fn.COUNT(TestAhmTemp2.datetime) != 7)
+)
+
+
     
     for x in query:
-        check_data = False
-        return check_data
-
+        print(f"Ungültige Daten gefunden: {x}")
+        is_data_valid = False
+        return is_data_valid
+####################################
     # sql = "SELECT date(tag), symbol, count(distinct tag) "\
     #     "FROM crypto_tseries t1 "\
     #     "where date(tag) <= date('"+ check_end +"') "\
@@ -167,23 +182,25 @@ def check_data(check_start, check_end):
     # cursor.close()
 
     #Check alle Tage da
-    query=(
-        TestAhmTemp2.select(
-            fn.count(fn.distinct(fn.date(TestAhmTemp2.date))),
-            TestAhmTemp2.symbol
-        )
-        .where(
-            (fn.date(TestAhmTemp2.date) <= check_end) &
-            (fn.date(TestAhmTemp2.date) >= check_start)
-        )
-        .group_by(TestAhmTemp2.symbol)
-        .having(fn.count(fn.distinct(fn.date(TestAhmTemp2.date))) != count_working_days
-        )
+    query = (
+    TestAhmTemp2
+    .select(
+        fn.COUNT(fn.DISTINCT(fn.DATE(TestAhmTemp2.datetime))).alias("count_days"),
+        TestAhmTemp2.symbol
     )
+    .where(
+        (TestAhmTemp2.datetime >= check_start_dt) &
+        (TestAhmTemp2.datetime <= check_end_dt)
+    )
+    .group_by(TestAhmTemp2.symbol)
+    .having(fn.COUNT(fn.DISTINCT(fn.DATE(TestAhmTemp2.datetime))) < count_working_days)
+)
 
     for x in query:
-        check_data = False
-        return check_data
+        print(f"Tage fehlen für Symbol: {x.symbol}, gezählte Tage: {x.count_days}")
+        print(f"Erwartete Arbeitstage: {count_working_days}")
+        is_data_valid = False
+
     # sql = "SELECT  count(distinct(date(tag))), symbol "\
     #     "from crypto_tseries "\
     #     "where date(tag) <= date('"+ check_end +"') "\
@@ -224,7 +241,7 @@ def check_data(check_start, check_end):
     #     sql2 = " and symbol = ':sym'  "+\
     #       "having count(*) = 0 "
 
-
+####################################
 
 
     if count_working_days > 0:
@@ -234,8 +251,8 @@ def check_data(check_start, check_end):
                     fn.count(TestAhmTemp2.symbol).alias("count")
                 )
                 .where(
-                    (fn.date(TestAhmTemp2.date) <= check_end) &
-                    (fn.date(TestAhmTemp2.date) >= check_start)&
+                    (TestAhmTemp2.datetime <= check_end_dt) &
+                    (TestAhmTemp2.datetime >= check_start_dt)&
                     (TestAhmTemp2.symbol == ticker)
                 )
             )
@@ -245,7 +262,7 @@ def check_data(check_start, check_end):
                 print(f"keine Daten im Zeitaum für: {ticker}" )
                 return False
     
-    return check_data
+    return is_data_valid
     # if count_working_days > 0:
     #     for ticker in ["MSFT", "AAPL"]:
 

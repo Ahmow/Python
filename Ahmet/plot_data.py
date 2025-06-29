@@ -17,7 +17,7 @@ def plot_data(symbol, data_df, **time_points):
      'Close':  list(data_df['close'])
     }
 
-    time_index = pd.DatetimeIndex(data_df['date'])
+    time_index = pd.DatetimeIndex(data_df['Datetime'])
 
     df2 = pd.DataFrame(data, index=time_index)
 

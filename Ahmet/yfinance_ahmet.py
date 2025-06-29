@@ -32,7 +32,7 @@ def imp_yfinance():
     ticker= ['MSFT']     #tabelle_url['Symbol'].tolist()
     interval= "1h"
     days_periode= 7
-    total_days= 30
+    total_days= 365
     enddate= datetime.today()
     startdate= enddate - timedelta(days = total_days)  #datetime - ein genauer Zeitstempel (Datum), timedelta – eine Zeitspanne, z. B. "7 Tage" oder "3 Stunden"
 
@@ -56,15 +56,15 @@ def imp_yfinance():
 
 
             data = yf.download(symbol, interval=interval, start=tabstartzeit, end=tabendzeit)
-        # if isinstance(data.columns, pd.MultiIndex):
+            # if isinstance(data.columns, pd.MultiIndex):
             data.columns = data.columns.get_level_values(0) #MultiIndex flatten
 
             data=data.reset_index() #Hier wird der Index (Datetime) zu einer normalen Spalte 'Datetime'
     
             data['symbol'] = symbol
-    # data_temp= data.index
-    # date_temo_0= data.index[0] #.strptime("%Y-%m-&d")'
-    # data["Datum"] = data.index
+            # data_temp= data.index
+            # date_temo_0= data.index[0] #.strptime("%Y-%m-&d")'
+            # data["Datum"] = data.index
             tabrahmen.append(data)
     
 
