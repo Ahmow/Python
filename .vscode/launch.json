@@ -16,7 +16,7 @@
 "request": "launch",
 "program": "${file}",
 "console": "integratedTerminal",
-"python": "/Users/roman/Documents/roman3-11venv/bin/python3",
+"python": "C:/Users/akoca/AppData/Local/Programs/Python/Python311/python.exe",
 "justMyCode": false
 },
 {
