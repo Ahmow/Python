@@ -14,6 +14,7 @@ import statsmodels.api as sm
 from advanced_ta import LorentzianClassification
 from ta.volume import money_flow_index as MFI
 
+
 def analyze_data_Lorentzian(df2, time_points):
     # openname="open"
     # date=pd.DataFrame(needed_data,columns=["date"])
@@ -37,7 +38,7 @@ def analyze_data_Lorentzian(df2, time_points):
             MFI(df['high'], df['low'], df['close'], df['volume'], 14) #f6
         ],
         settings=LorentzianClassification.Settings(
-            source='close',
+            source= df['close'],
             neighborsCount=8,
             maxBarsBack=2000,
             useDynamicExits=False
@@ -56,5 +57,18 @@ def analyze_data_Lorentzian(df2, time_points):
                 crossoverLag = 2)
         )
     )
-    #lc.dump('output/result.csv')
-    lc.plot('output/result.jpg')
+
+
+    # lc.data.head()
+
+    # from sklearn.preprocessing import StandardScaler
+    # scaler = StandardScaler()
+    # scaler.fit(lc.data)
+    # scaled_data = scaler.transform(lc.data)
+
+    # scaled_data_df = pd.DataFrame(scaled_data, columns=lc.data.columns)
+
+    # scaled_data_df.head()
+
+    lc.dump('C:\BckUp\Python/result.csv')
+    #lc.plot('C:\BckUp\Python/result.jpg')
