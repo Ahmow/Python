@@ -16,16 +16,34 @@ from ta.volume import money_flow_index as MFI
 
 
 def analyze_data_Lorentzian(df2, time_points):
-    # openname="open"
-    # date=pd.DataFrame(needed_data,columns=["date"])
-    # open=pd.DataFrame()
-    # open=pd.DataFrame(needed_data[openname])
-    # date=date.reset_index(drop=True)
-    # open=open.reset_index(drop=True)
-    # df=pd.concat([date,open],axis=1)
+    openname="open"
+    highname="high"
+    lowname="low"
+    closename="close"
+    volumename="volume"
+    date=pd.DataFrame(df2,columns=["date"])
+    close=pd.DataFrame()
+    close=pd.DataFrame(df2[closename])
+    open=pd.DataFrame()
+    open=pd.DataFrame(df2[openname])
+    volume=pd.DataFrame()
+    volume=pd.DataFrame(df2[volumename])
+    high=pd.DataFrame()
+    high=pd.DataFrame(df2[highname])
+    low=pd.DataFrame()
+    low=pd.DataFrame(df2[lowname])
+    date=date.reset_index(drop=True)
+    open=open.reset_index(drop=True)
+    high=high.reset_index(drop=True)
+    low=low.reset_index(drop=True)
+    close=close.reset_index(drop=True)
+    volume=volume.reset_index(drop=True)
+    df=pd.concat([date,open,high,low,close, volume],axis=1)
+    print(df)
+    #df = df2.drop('symbol', axis=1)
 
-    df = df2.drop('symbol', axis=1)
-
+    df.index = pd.DatetimeIndex(df["date"])
+    
 
     lc = LorentzianClassification(
         df,
@@ -58,6 +76,8 @@ def analyze_data_Lorentzian(df2, time_points):
         )
     )
 
+    
+    
 
     # lc.data.head()
 
@@ -70,5 +90,6 @@ def analyze_data_Lorentzian(df2, time_points):
 
     # scaled_data_df.head()
 
-    lc.dump('C:\BckUp\Python/result.csv')
-    #lc.plot('C:\BckUp\Python/result.jpg')
+    # lc.dump('C:\BckUp\Python/result.csv')
+    lc.plot('C:\BckUp\Python/result.jpg')
+    
