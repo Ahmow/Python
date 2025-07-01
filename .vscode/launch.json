@@ -77,6 +77,15 @@
       "console": "integratedTerminal",
       "python": "C:/Program Files/Python311/python.exe"
  }
+//  {
+// "name": "Python Debugger: Current File",
+// "type": "debugpy",
+// "request": "launch",
+// "justMyCode": true,
+// "module": "${command:extension.commandvariable.file.relativeFileDotsNoExtension}",
+// "cwd":"${workspaceFolder}",
+// "python": "/Users/roman/Documents/roman3-11venv/bin/python3"
+// },
 ]
 }
 
