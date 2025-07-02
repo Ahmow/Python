@@ -13,11 +13,13 @@ time_points = {"start": start_dt, "end": end_dt}
 
 needed_data = get_data_from_sql(start_dt, end_dt)
 
-# plot_data("MSFT", needed_data, **time_points)
+if needed_data  is not None:
 
-# prediction = analyze_data(needed_data, time_points)
+    # plot_data("MSFT", needed_data, **time_points)
 
-# top_stocks(start_dt, end_dt)
+    # prediction = analyze_data(needed_data, time_points)
 
-analyze_data_Lorentzian(needed_data, time_points)
+    # top_stocks(start_dt, end_dt)
+
+    analyze_data_Lorentzian(needed_data, time_points)
 
