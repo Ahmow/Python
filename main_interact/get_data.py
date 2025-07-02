@@ -6,8 +6,8 @@ from main_interact.top_stock_data import top_stocks
 from main_interact.prediction_data_LZ import analyze_data_Lorentzian
 
 
-start_dt = dt.datetime(2024, 8, 6)
-end_dt =dt.datetime(2024, 8, 26)
+start_dt = dt.datetime(2024, 8, 1)
+end_dt =dt.datetime(2024, 8, 30)
 
 time_points = {"start": start_dt, "end": end_dt}
 

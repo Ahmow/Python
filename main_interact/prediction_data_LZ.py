@@ -39,7 +39,6 @@ def analyze_data_Lorentzian(df2, time_points):
     close=close.reset_index(drop=True)
     volume=volume.reset_index(drop=True)
     df=pd.concat([date,open,high,low,close, volume],axis=1)
-    print(df)
     #df = df2.drop('symbol', axis=1)
 
     df.index = pd.DatetimeIndex(df["date"])
@@ -76,7 +75,19 @@ def analyze_data_Lorentzian(df2, time_points):
         )
     )
 
+    # x = [1, 2, 3, 4, 5]
+    # y1 = [1, 2, 3, 4, 5]
+    # y2 = [5, 4, 3, 2, 1]
     
+    # # Plots erstellen
+    # plt.plot(x, y1, 'b-', label='Aufsteigend')
+    # plt.plot(x, y2, 'r-', label='Absteigend')
+    
+    # # Legende hinzufügen
+    # plt.legend(loc='best')
+    
+    # # Abbildung anzeigen
+    # plt.show()
     
 
     # lc.data.head()
@@ -91,5 +102,10 @@ def analyze_data_Lorentzian(df2, time_points):
     # scaled_data_df.head()
 
     # lc.dump('C:\BckUp\Python/result.csv')
+
+    # data = lc.yhat1
+    # print(data)
+    # df1 = pd.DataFrame(data)
+    # print(df1)
     lc.plot('C:\BckUp\Python/result.jpg')
     

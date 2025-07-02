@@ -37,6 +37,11 @@ def  imp_yfinance(start_d, end_d):
 
   conn=sqlite3.connect('backtest.db')
 
+  check_start_t =  dt.strptime(start_d, format_data).date()
+  check_end_t =  dt.strptime(end_d, format_data).date()
+
+  diff =  (check_end_t - check_start_t).days
+
   # for stock in german_stocks: #BNR und DTG ausschließen
   #   ticker = stock['symbol']
   for ticker in ["MSFT", "AAPL"]:
@@ -59,7 +64,7 @@ def  imp_yfinance(start_d, end_d):
       data.to_sql(tabellen_name, conn, if_exists=db_aktion)
       db_aktion = 'append'
 
-    for i  in range(15):
+    for i  in range(diff):
           start = end
           startdate = dt.strptime(end, format_data).date()
           startdate= add_days(1, startdate)
