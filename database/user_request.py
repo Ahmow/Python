@@ -51,13 +51,10 @@ def get_data_from_sql(start_dt, end_dt):
         Check_OK = True
         Check_OK = check_data(check_start, check_end)
 
-        if Check_OK:
-            df = pd.read_sql(sql, conn)
-            conn.close()
-            return df
-        else:
-            print("Daten in yFinance unvollständig")
-
+        df = pd.read_sql(sql, conn)
+        conn.close()
+        return df
+        
     conn.close()
 
 # df.plot(kind = 'scatter', x = 'date', y = 'open')
